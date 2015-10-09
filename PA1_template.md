@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
@@ -12,7 +7,8 @@ output:
   2. Process/transform the data (if necessary) into a format suitable for your analysis
 
 First, we load the needed libraries.
-```{r message=FALSE, warning=FALSE}
+
+```r
 library(dplyr)
 library(lubridate)
 library(grid)
@@ -20,30 +16,116 @@ library(ggplot2)
 ```
 
 We import directly the data from the zipped version.
-```{r echo = TRUE}
+
+```r
 dat <- read.csv(unz("activity.zip", "activity.csv"), header = TRUE)
 ```
 
 Then, we check some metrics to discover the dataset.
-```{r echo=TRUE}
+
+```r
 str(dat)
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
+
+```r
 summary(dat)
+```
+
+```
+##      steps                date          interval     
+##  Min.   :  0.00   2012-10-01:  288   Min.   :   0.0  
+##  1st Qu.:  0.00   2012-10-02:  288   1st Qu.: 588.8  
+##  Median :  0.00   2012-10-03:  288   Median :1177.5  
+##  Mean   : 37.38   2012-10-04:  288   Mean   :1177.5  
+##  3rd Qu.: 12.00   2012-10-05:  288   3rd Qu.:1766.2  
+##  Max.   :806.00   2012-10-06:  288   Max.   :2355.0  
+##  NA's   :2304     (Other)   :15840
+```
+
+```r
 head(dat)
+```
+
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
+```
+
+```r
 tail(dat)
+```
+
+```
+##       steps       date interval
+## 17563    NA 2012-11-30     2330
+## 17564    NA 2012-11-30     2335
+## 17565    NA 2012-11-30     2340
+## 17566    NA 2012-11-30     2345
+## 17567    NA 2012-11-30     2350
+## 17568    NA 2012-11-30     2355
+```
+
+```r
 colSums(is.na(dat))
+```
+
+```
+##    steps     date interval 
+##     2304        0        0
 ```
 
 It seems that the date variable is a factor, so we use the lubridate package to
 convert the date into a POSIXct class.
-```{r echo=TRUE}
+
+```r
 dat <- mutate(dat, date = ymd(date))
 ```
 
 We check that the transformation has gone well.
-```{r echo=TRUE}
+
+```r
 class(dat$date)
+```
+
+```
+## [1] "POSIXct" "POSIXt"
+```
+
+```r
 summary(dat$date)
+```
+
+```
+##         Min.      1st Qu.       Median         Mean      3rd Qu. 
+## "2012-10-01" "2012-10-16" "2012-10-31" "2012-10-31" "2012-11-15" 
+##         Max. 
+## "2012-11-30"
+```
+
+```r
 head(dat)
+```
+
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
 ```
 
 ## What is mean total number of steps taken per day?
@@ -59,7 +141,8 @@ per day
 **For this part, we'll ignore the missing values in the dataset.**  
 
 First, we calculate the total number of steps taken per day.
-```{r echo=TRUE}
+
+```r
 dat2 <- dat %>%
     filter(!is.na(steps)) %>%
     group_by(date) %>% summarise(total = sum(steps))
@@ -67,8 +150,26 @@ dat2 <- dat %>%
 head(dat2, 10)
 ```
 
+```
+## Source: local data frame [10 x 2]
+## 
+##          date total
+##        (time) (int)
+## 1  2012-10-02   126
+## 2  2012-10-03 11352
+## 3  2012-10-04 12116
+## 4  2012-10-05 13294
+## 5  2012-10-06 15420
+## 6  2012-10-07 11015
+## 7  2012-10-09 12811
+## 8  2012-10-10  9900
+## 9  2012-10-11 10304
+## 10 2012-10-12 17382
+```
+
 Then we make a histogram of the values.
-```{r echo=TRUE}
+
+```r
 h1 <- ggplot(dat2, aes(x =  total)) +
     geom_histogram(binwidth = 5000, col = "black", fill = "#999999") +
     xlab("number of steps by day") +
@@ -85,12 +186,24 @@ h1 <- ggplot(dat2, aes(x =  total)) +
 h1
 ```
 
+![](./PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
+
 We calculate the mean and median:
-```{r echo=TRUE}
+
+```r
 mean(dat2$total)
 ```
-```{r echo=TRUE}
+
+```
+## [1] 10766.19
+```
+
+```r
 median(dat2$total)
+```
+
+```
+## [1] 10765
 ```
 
 ## What is the average daily activity pattern?
@@ -101,14 +214,29 @@ median(dat2$total)
 contains the maximum number of steps?  
 
 First, we need to group the steps by the "interval" variable.
-```{r echo = TRUE}
+
+```r
 dat3 <- dat %>% 
     group_by(interval) %>% 
     summarise(total = mean(steps, na.rm = TRUE))
 head(dat3)
 ```
 
-```{r echo = TRUE}
+```
+## Source: local data frame [6 x 2]
+## 
+##   interval     total
+##      (int)     (dbl)
+## 1        0 1.7169811
+## 2        5 0.3396226
+## 3       10 0.1320755
+## 4       15 0.1509434
+## 5       20 0.0754717
+## 6       25 2.0943396
+```
+
+
+```r
 p <- ggplot(dat3, aes(x = interval, y = total)) + 
     geom_line() +
     xlab("5-minute interval") +
@@ -132,10 +260,21 @@ p <- ggplot(dat3, aes(x = interval, y = total)) +
 p
 ```
 
+![](./PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
+
 Now we search for the maximum number of steps, using the top_n() function from 
 the dplyr package:
-```{r echo = TRUE}
+
+```r
 dat3 %>% top_n(1, total)
+```
+
+```
+## Source: local data frame [1 x 2]
+## 
+##   interval    total
+##      (int)    (dbl)
+## 1      835 206.1698
 ```
 **Answer**: The interval **835** has the maximum average number of steps.
 
@@ -157,14 +296,36 @@ the impact of imputing missing data on the estimates of the total daily number
 of steps?
 
 Total number of missing values in the dataset:
-```{r echo = TRUE}
+
+```r
 colSums(is.na(dat))
+```
+
+```
+##    steps     date interval 
+##     2304        0        0
 ```
 
 ### Strategy for filling in all of the missing values
 Let's check first if some days have completely NAs for the "steps" column:
-```{r echo = TRUE}
+
+```r
 dat %>% group_by(date) %>% filter(is.na(steps)) %>% count(date)
+```
+
+```
+## Source: local data frame [8 x 2]
+## 
+##         date     n
+##       (time) (int)
+## 1 2012-10-01   288
+## 2 2012-10-08   288
+## 3 2012-11-01   288
+## 4 2012-11-04   288
+## 5 2012-11-09   288
+## 6 2012-11-10   288
+## 7 2012-11-14   288
+## 8 2012-11-30   288
 ```
 
 There are 8 days without any value for "steps". Given that, it's preferrable to 
@@ -173,34 +334,67 @@ the decimal values to a whole number using the round() function.
 
 We create a new dataset that is equal to the original one but with the missing 
 data filled in.
-```{r echo = TRUE}
+
+```r
 dat4 <- dat %>% 
   group_by(interval) %>% 
   mutate(steps = ifelse(is.na(steps), round(mean(steps, na.rm = TRUE)), steps))
 ```
 
 Let's check if there are no more NAs:
-```{r echo = TRUE}
+
+```r
 colSums(is.na(dat4))
 ```
+
+```
+##    steps     date interval 
+##        0        0        0
+```
 and if there are still days without any "steps" value:
-```{r echo = TRUE}
+
+```r
 dat4 %>% group_by(date) %>% filter(is.na(steps)) %>% count(date)
+```
+
+```
+## Source: local data frame [0 x 2]
+## 
+## Variables not shown: date (time), n (int)
 ```
 
 With this new dataset, we make the same histogram as previously, showing the 
 total number of steps taken each day.
 
 We do the same task of grouping the data by date:
-```{r echo = TRUE}
+
+```r
 dat5 <- dat4 %>%
     group_by(date) %>% summarise(total = sum(steps))
 
 head(dat5, 10)
 ```
 
+```
+## Source: local data frame [10 x 2]
+## 
+##          date total
+##        (time) (dbl)
+## 1  2012-10-01 10762
+## 2  2012-10-02   126
+## 3  2012-10-03 11352
+## 4  2012-10-04 12116
+## 5  2012-10-05 13294
+## 6  2012-10-06 15420
+## 7  2012-10-07 11015
+## 8  2012-10-08 10762
+## 9  2012-10-09 12811
+## 10 2012-10-10  9900
+```
+
 And then we make the graph:
-```{r echo = TRUE}
+
+```r
 h2 <- ggplot(dat5, aes(x =  total)) +
     geom_histogram(binwidth = 5000, col = "black", fill = "#999999") +
     xlab("number of steps by day") +
@@ -217,13 +411,25 @@ h2 <- ggplot(dat5, aes(x =  total)) +
 h2
 ```
 
+![](./PA1_template_files/figure-html/unnamed-chunk-19-1.png) 
+
 We calculate the mean and median total number of steps taken per day. 
 
-```{r echo=TRUE}
+
+```r
 mean(dat5$total)
 ```
-```{r echo=TRUE}
+
+```
+## [1] 10765.64
+```
+
+```r
 median(dat5$total)
+```
+
+```
+## [1] 10762
 ```
 
 The mean is nearly the same as before (10766.19 before, 10765.64 now). The 
@@ -243,10 +449,17 @@ simulated data.
 
 We create a new factor variable called "daytime" with two levels – “weekday” and 
 “weekend” indicating whether a given date is a weekday or a weekend day.
-```{r echo = TRUE}
+
+```r
 # convert to english locale
 Sys.setlocale("LC_ALL", 'en_GB.UTF-8')
+```
 
+```
+## [1] "en_GB.UTF-8/en_GB.UTF-8/en_GB.UTF-8/C/en_GB.UTF-8/fr_FR.UTF-8"
+```
+
+```r
 dat4$daytype <- as.factor(ifelse(weekdays(dat4$date) == "Saturday" | 
                            weekdays(dat4$date) == "Sunday", 
                        "weekend", "weekday"))
@@ -255,8 +468,15 @@ dat4$daytype <- as.factor(ifelse(weekdays(dat4$date) == "Saturday" |
 prop.table(table(dat4$daytype))*100
 ```
 
+```
+## 
+##  weekday  weekend 
+## 73.77049 26.22951
+```
+
 For the time series plot, we need to group the steps by the "interval" variable:
-```{r echo = TRUE}
+
+```r
 dat6 <- dat4 %>% 
     group_by(interval, daytype) %>% 
     summarise(avg = mean(steps, na.rm = TRUE))
@@ -264,7 +484,8 @@ dat6 <- dat4 %>%
 
 Then we can plot the time series using ggplot2. Facet_grid() allow us to split 
 up the data by the variable "daytype" and plot the subsets of data together. 
-```{r echo = TRUE}
+
+```r
 p <- ggplot(dat6, aes(x = interval, y = avg, fill = daytype)) + 
     geom_line() +
     xlab("5-minute interval") +
@@ -281,5 +502,7 @@ p <- ggplot(dat6, aes(x = interval, y = avg, fill = daytype)) +
 p <- p + facet_grid(daytype ~ .)
 p
 ```
+
+![](./PA1_template_files/figure-html/unnamed-chunk-24-1.png) 
 
 The individual seems to wake up earlier on week days.
